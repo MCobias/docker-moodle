@@ -2,16 +2,12 @@ FROM ubuntu:20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -y \
-    && apt-get dist-upgrade -y \
-    apt-get install build-essential -y \
-    apt-get update -y \
+RUN apt-get update && apt-get install -y
+RUN apt-get install -y build-essential \
     nano \
     unzip \
     curl \
-    graphviz \
     locales \
-    nginx \
     php \
     libapache2-mod-php \
     php-bcmath \
@@ -33,16 +29,13 @@ RUN apt-get update -y \
     php-bz2 \
     php-dom \
     php-dev \
-    php-gettext \
     php-pear \
     php-bcmath \
-    php-commom \
     apache2 \ 
     mysql-client \
     libmysqlclient-dev \
     php-mysql \
-    libmcrypt-dev \
-    php-sqlite 
+    libmcrypt-dev
 
 RUN locale-gen pt_br.UTF-8
 
@@ -92,5 +85,7 @@ RUN find /var/data -type f -exec chmod g=rws "{}" \;
 RUN service apache2 restart
 
 RUN cd /usr/local/lib/ && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
+
+EXPOSE 8080 80
 
 ENTRYPOINT ["apache2-foreground"]
