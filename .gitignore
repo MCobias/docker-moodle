@@ -1,8 +1,4 @@
-data
 data/*
-db
 db/*
-dump
 dump/*
-src
 src/*
