@@ -36,6 +36,7 @@ services:
       - db:database
     environment:
       PMA_HOST: database
+    restart: always  
   tasks:
     image: funkyfuture/deck-chores:1
     restart: unless-stopped
