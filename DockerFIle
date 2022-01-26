@@ -85,6 +85,5 @@ RUN service apache2 restart
 RUN cd /usr/local/lib/ && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 
 EXPOSE 80
-USER www-data
 
 ENTRYPOINT ["apache2ctl", "-D", "FOREGROUND"]

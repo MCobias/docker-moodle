@@ -16,7 +16,7 @@ services:
     build: .
     container_name: moodle
     ports:
-      - "80:80"
+      - "8080:80"
     links:
       - db:database
     volumes:
