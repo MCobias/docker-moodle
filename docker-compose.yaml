@@ -1,38 +1,31 @@
 version: '3'
 services:
   db:
-    image: mysql
+    image: mariadb
+    container_name: mariadb
     volumes:
-      - db_data:/var/lib/mysql
+      - db:/var/lib/mysql
+      - ./dump/moodle.sql:/docker-entrypoint-initdb.d/dump.sql
     environment:
       MYSQL_ROOT_PASSWORD: 12345
-      MYSQL_DATABASE: root
+      MYSQL_DATABASE: moodle
       MYSQL_USER: root
       MYSQL_PASSWORD: 12345
     restart: always
   moodle:
-    image: aesr/moodle
+    build: .
+    container_name: moodle
     ports:
       - "8080:80"
     links:
       - db:database
     volumes:
-      - ./moodledata:/var/www/moodledata
-      - ./moodle:/var/www/html
+      - ./data:/var/data
+      - ./src:/var/www/html/src
     restart: always
-    environment:
-      MOODLE_DB_HOST: database
-      MOODLE_DB_PORT: 3306
-      MOODLE_DB_NAME: moodle
-      MOODLE_DB_USER: moodle
-      MOODLE_DB_PASSWORD: password
-      MOODLE_WWW_ROOT: ${MOODLE_WWW_ROOT:-http://localhost:8080}
-      MOODLE_DATA_ROOT: /var/www/moodledata
-    labels:
-      cron.moodle.command: "/usr/local/bin/php /var/www/html/admin/cli/cron.php"
-      cron.moodle.interval: "every minute"
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
     ports:
       - "8081:80"
     links:
@@ -43,10 +36,10 @@ services:
     image: funkyfuture/deck-chores:1
     restart: unless-stopped
     environment:
-      TIMEZONE: Europe/Paris
+      TIMEZONE: America/Sao_Paulo
       LABEL_NAMESPACE: cron
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 volumes:
-    db_data:
+    db:
       driver: local
