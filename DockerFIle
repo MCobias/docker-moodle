@@ -75,12 +75,18 @@ RUN { \
     echo 'opcache.enable_file_override=0'; \
   } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-RUN mkdir /var/data/ \
-    && chmod 0777 /var/data \
-    && mkdir /var/data/moodledata \
-    && chmod 0777 /var/data/moodledata
+ADD src/ /var/www/html/src/
+ADD data/ /var/data/
 
-VOLUME ["/var/www/html", "/var/data/"]
+RUN chown $USER:www-data -R /var/data
+RUN chmod u=rwX,g=srX,o=rX -R /var/data
+RUN find /var/data -type d -exec chmod g=rwxs "{}" \;
+RUN find /var/data -type f -exec chmod g=rws "{}" \;
+
+RUN chown $USER:www-data -R /var/www/html
+RUN chmod u=rwX,g=srX,o=rX -R /var/www/html
+RUN find /var/data -type d -exec chmod g=rwxs "{}" \;
+RUN find /var/data -type f -exec chmod g=rws "{}" \;
 
 # Start the webserver
 RUN service apache2 restart
