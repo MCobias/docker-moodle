@@ -4,14 +4,15 @@ services:
     image: mariadb
     container_name: mariadb
     volumes:
-      - db:/var/lib/mysql
-      - ./dump/moodle.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ./db:/var/lib/mysql
+      - ./dump/moodle.sql:/docker-entrypoint-initdb.d/moodle.sql
     environment:
       MYSQL_ROOT_PASSWORD: 12345
       MYSQL_DATABASE: moodle
       MYSQL_USER: root
       MYSQL_PASSWORD: 12345
     restart: always
+    command: --innodb-read-only-compressed=OFF
   moodle:
     build: .
     container_name: moodle
@@ -35,6 +36,7 @@ services:
       - db:database
     environment:
       PMA_HOST: database
+    restart: always  
   tasks:
     image: funkyfuture/deck-chores:1
     restart: unless-stopped
