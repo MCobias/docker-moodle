@@ -10,12 +10,15 @@ RUN apt-get install -y build-essential \
     locales \
     php \
     libapache2-mod-php \
+    libapache2-mod-auth-openidc \
     php-bcmath \
     php-cli \
     php-curl \
     php-fpm \
     php-gd \
     php-intl \
+    php-json \
+    php-ldap \
     php-ldap \
     php-mbstring \
     php-mysql \
@@ -35,39 +38,34 @@ RUN apt-get install -y build-essential \
     mysql-client \
     libmysqlclient-dev \
     php-mysql \
-    libmcrypt-dev
+    libmcrypt-dev \
+    # Ensure apache can bind to 80 as non-root
+        libcap2-bin && \
+    setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2 && \
+    dpkg --purge libcap2-bin && \
+    apt-get -y autoremove && \
+# As apache is never run as root, change dir ownership
+    a2disconf other-vhosts-access-log && \
+    chown -Rh www-data. /var/run/apache2 && \
+# Install ImageMagick CLI tools
+    apt-get -y install --no-install-recommends imagemagick && \
+# Clean up apt setup files
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+# Setup apache
+    a2enmod rewrite headers expires ext_filter
 
-RUN locale-gen pt_br.UTF-8
-
-RUN ufw app list
-
-RUN ufw app info "Apache Full"
-
-RUN ufw allow in "Apache Full"
+RUN locale-gen pt_BR.UTF-8
 
 RUN apt-get install --reinstall ca-certificates -y
 
 # Enable apache mod_rewrite
 RUN a2enmod rewrite
 RUN a2enmod actions
-RUN a2enmod rewrite expires
 
 # Change AllowOverride from None to All (between line 170 and 174)
 RUN sed -i '170,174 s/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
-
-# set recommended PHP.ini settings
-# see https://secure.php.net/manual/en/opcache.installation.php
-# see https://docs.moodle.org/36/en/OPcache
-RUN { \
-    echo 'opcache.memory_consumption=128'; \
-    echo 'opcache.max_accelerated_files=10000'; \
-    echo 'opcache.revalidate_freq=60'; \
-    echo 'opcache.use_cwd=1'; \
-    echo 'opcache.validate_timestamps=1'; \
-    echo 'opcache.save_comments=1'; \
-    echo 'opcache.enable_file_override=0'; \
-  } > /usr/local/etc/php/conf.d/opcache-recommended.ini
-
+      
 ADD src/ /var/www/html/src/
 ADD data/ /var/data/
 
@@ -86,6 +84,7 @@ RUN service apache2 restart
 
 RUN cd /usr/local/lib/ && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 
-EXPOSE 8080 80
+EXPOSE 80
+USER www-data
 
-ENTRYPOINT ["apache2-foreground"]
+ENTRYPOINT ["apache2ctl", "-D", "FOREGROUND"]

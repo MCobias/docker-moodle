@@ -16,12 +16,15 @@ services:
     build: .
     container_name: moodle
     ports:
-      - "8080:80"
+      - "80:80"
     links:
       - db:database
     volumes:
       - ./data:/var/data
       - ./src:/var/www/html/src
+    labels:
+      cron.moodle.command: "/usr/local/bin/php /var/www/html/src/admin/cli/cron.php"
+      cron.moodle.interval: "every minute"  
     restart: always
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
