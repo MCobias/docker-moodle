@@ -1,0 +1,90 @@
+FROM ubuntu:20.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y \
+    && apt-get dist-upgrade -y \
+    apt-get install build-essential -y \
+    apt-get update -y \
+    nano \
+    unzip \
+    curl \
+    graphviz \
+    locales \
+    nginx \
+    php \
+    libapache2-mod-php \
+    php-bcmath \
+    php-cli \
+    php-curl \
+    php-fpm \
+    php-gd \
+    php-intl \
+    php-ldap \
+    php-mbstring \
+    php-mysql \
+    php-pgsql \
+    php-soap \
+    php-tideways \
+    php-xdebug \
+    php-xml \
+    php-xmlrpc \
+    php-zip \
+    php-bz2 \
+    php-dom \
+    php-dev \
+    php-gettext \
+    php-pear \
+    php-bcmath \
+    php-commom \
+    apache2 \ 
+    mysql-client \
+    libmysqlclient-dev \
+    php-mysql \
+    libmcrypt-dev \
+    php-sqlite 
+
+RUN locale-gen pt_br.UTF-8
+
+RUN ufw app list
+
+RUN ufw app info "Apache Full"
+
+RUN ufw allow in "Apache Full"
+
+RUN apt-get install --reinstall ca-certificates -y
+
+# Enable apache mod_rewrite
+RUN a2enmod rewrite
+RUN a2enmod actions
+RUN a2enmod rewrite expires
+
+# Change AllowOverride from None to All (between line 170 and 174)
+RUN sed -i '170,174 s/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+
+# set recommended PHP.ini settings
+# see https://secure.php.net/manual/en/opcache.installation.php
+# see https://docs.moodle.org/36/en/OPcache
+RUN { \
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.max_accelerated_files=10000'; \
+    echo 'opcache.revalidate_freq=60'; \
+    echo 'opcache.use_cwd=1'; \
+    echo 'opcache.validate_timestamps=1'; \
+    echo 'opcache.save_comments=1'; \
+    echo 'opcache.enable_file_override=0'; \
+  } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+RUN mkdir /var/data/ \
+    && chmod 0777 /var/data \
+    && mkdir /var/data/moodledata \
+    && chmod 0777 /var/data/moodledata
+
+VOLUME ["/var/www/html", "/var/data/"]
+
+# Start the webserver
+RUN service apache2 restart
+
+RUN cd /usr/local/lib/ && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
+
+ENTRYPOINT ["apache2-foreground"]
