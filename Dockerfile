@@ -47,8 +47,6 @@ RUN apt-get install -y build-essential \
 # As apache is never run as root, change dir ownership
     a2disconf other-vhosts-access-log && \
     chown -Rh www-data. /var/run/apache2 && \
-# Install ImageMagick CLI tools
-    apt-get -y install --no-install-recommends imagemagick && \
 # Clean up apt setup files
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
