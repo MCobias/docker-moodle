@@ -76,8 +76,8 @@ RUN find /var/data -type f -exec chmod g=rws "{}" \;
 
 RUN chown $USER:www-data -R /var/www/html
 RUN chmod u=rwX,g=srX,o=rX -R /var/www/html
-RUN find /var/data -type d -exec chmod g=rwxs "{}" \;
-RUN find /var/data -type f -exec chmod g=rws "{}" \;
+RUN find /var/www/html -type d -exec chmod g=rwxs "{}" \;
+RUN find /var/www/html -type f -exec chmod g=rws "{}" \;
 
 # Start the webserver
 RUN service apache2 restart
